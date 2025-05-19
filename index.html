@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recipe search</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f8f8f8; }
+    input, button { padding: 10px; font-size: 16px; margin: 5px 0; width: 100%; }
+    .button-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .recipe { background: white; padding: 10px; margin-top: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .recipe img { max-width: 100%; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>🧑‍🍳 What interesting things do you have in your fridge??</h1>
+  <p>Enter ingredients separated by commas:</p>
+  <input type="text" id="ingredientsInput" placeholder="for example eggs, cheese, onion" />
+
+  <div class="button-group">
+    <button onclick="findRecipes()">Search by Spoonacular</button>
+    <button onclick="searchAniaGotuje()">Search on aniagotuje.pl via Google [PL VERSION]</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    const API_KEY = '3b81c4c0df11478a9d38e809a868db17'; // ← paste your Spoonacular key here
+
+    async function findRecipes() {
+      const ingredients = document.getElementById('ingredientsInput').value;
+      const url = `https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=5&apiKey=${API_KEY}`;
+
+      const res = await fetch(url);
+      const recipes = await res.json();
+
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '';
+
+      if (recipes.length === 0) {
+        resultsDiv.innerHTML = '<p>No recipes. Try different ingredients.</p>';
+        return;
+      }
+
+      recipes.forEach(recipe => {
+        const recipeDiv = document.createElement('div');
+        recipeDiv.className = 'recipe';
+        recipeDiv.innerHTML = `
+          <h3>${recipe.title}</h3>
+          <img src="${recipe.image}" alt="${recipe.title}" />
+          <p><a href="https://spoonacular.com/recipes/${recipe.title.replaceAll(' ', '-').toLowerCase()}-${recipe.id}" target="_blank">See the recipe</a></p>
+        `;
+        resultsDiv.appendChild(recipeDiv);
+      });
+    }
+
+    function searchAniaGotuje() {
+      const ingredients = document.getElementById('ingredientsInput').value;
+      if (!ingredients.trim()) {
+        alert('Enter the ingredients first.');
+        return;
+      }
+      const query = `aniagotuje.pl przepis ${ingredients}`;
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+      window.open(googleUrl, '_blank');
+    }
+  </script>
+</body>
+</html>
